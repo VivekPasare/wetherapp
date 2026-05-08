@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather Forecast App</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#2193b0,#6dd5ed);
+    padding:20px;
+}
+
+.container{
+    width:100%;
+    max-width:420px;
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+    color:#333;
+}
+
+.search-box{
+    display:flex;
+    gap:10px;
+}
+
+.search-box input{
+    flex:1;
+    padding:12px;
+    border:2px solid #ddd;
+    border-radius:10px;
+    outline:none;
+    font-size:16px;
+}
+
+.search-box button{
+    padding:12px 18px;
+    border:none;
+    border-radius:10px;
+    background:#2193b0;
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.search-box button:hover{
+    background:#176d82;
+}
+
+.weather{
+    display:none;
+    text-align:center;
+    margin-top:25px;
+}
+
+.weather img{
+    width:100px;
+}
+
+.temp{
+    font-size:48px;
+    font-weight:bold;
+    color:#222;
+}
+
+.city{
+    font-size:28px;
+    margin:10px 0;
+    color:#444;
+}
+
+.condition{
+    font-size:20px;
+    color:#666;
+}
+
+.details{
+    display:flex;
+    justify-content:space-between;
+    margin-top:25px;
+    gap:15px;
+}
+
+.card{
+    flex:1;
+    background:#f3f3f3;
+    padding:15px;
+    border-radius:15px;
+}
+
+.card h3{
+    margin-bottom:8px;
+    color:#333;
+}
+
+.card p{
+    font-size:18px;
+    color:#555;
+}
+
+.error{
+    margin-top:20px;
+    text-align:center;
+    color:red;
+    display:none;
+}
+
+.loading{
+    text-align:center;
+    margin-top:20px;
+    display:none;
+    color:#333;
+}
+
+@media(max-width:500px){
+
+    .details{
+        flex-direction:column;
+    }
+
+    .temp{
+        font-size:40px;
+    }
+
+    .city{
+        font-size:24px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🌦 Weather App</h1>
+
+    <div class="search-box">
+        <input type="text" id="cityInput" placeholder="Enter city name">
+        <button onclick="getWeather()">Search</button>
+    </div>
+
+    <div class="loading" id="loading">
+        Loading weather...
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="weather" id="weatherBox">
+
+        <img id="weatherIcon" src="" alt="Weather Icon">
+
+        <div class="temp" id="temp">0°C</div>
+
+        <div class="city" id="city">City Name</div>
+
+        <div class="condition" id="condition">Condition</div>
+
+        <div class="details">
+
+            <div class="card">
+                <h3>Humidity</h3>
+                <p id="humidity">0%</p>
+            </div>
+
+            <div class="card">
+                <h3>Wind</h3>
+                <p id="wind">0 km/h</p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+// Paste your API key here
+const apiKey = "4e748cac3bb60de6ac32a07fbcce4a7c";
+
+async function getWeather(){
+
+    const city = document.getElementById("cityInput").value.trim();
+
+    const weatherBox = document.getElementById("weatherBox");
+    const errorBox = document.getElementById("error");
+    const loading = document.getElementById("loading");
+
+    if(city === ""){
+        errorBox.style.display = "block";
+        errorBox.innerHTML = "Please enter city name";
+        weatherBox.style.display = "none";
+        return;
+    }
+
+    loading.style.display = "block";
+    errorBox.style.display = "none";
+    weatherBox.style.display = "none";
+
+    try{
+
+        const url =
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+        const response = await fetch(url);
+
+        const data = await response.json();
+
+        loading.style.display = "none";
+
+        if(data.cod != 200){
+
+            errorBox.style.display = "block";
+            errorBox.innerHTML = data.message;
+
+            return;
+        }
+
+        document.getElementById("city").innerHTML = data.name;
+        document.getElementById("temp").innerHTML =
+        Math.round(data.main.temp) + "°C";
+
+        document.getElementById("condition").innerHTML =
+        data.weather[0].main;
+
+        document.getElementById("humidity").innerHTML =
+        data.main.humidity + "%";
+
+        document.getElementById("wind").innerHTML =
+        data.wind.speed + " km/h";
+
+        const icon = data.weather[0].icon;
+
+        document.getElementById("weatherIcon").src =
+        `https://openweathermap.org/img/wn/${icon}@2x.png`;
+
+        weatherBox.style.display = "block";
+
+    }
+    catch(error){
+
+        loading.style.display = "none";
+
+        errorBox.style.display = "block";
+
+        errorBox.innerHTML =
+        "Something went wrong. Check internet or API key.";
+    }
+}
+
+</script>
+
+</body>
+</html>
